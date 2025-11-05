@@ -1,4 +1,10 @@
+using Mera_yani_shweta_ka_app.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+                       options.UseSqlServer(builder.Configuration.GetConnectionString("Conn")));// connection string app setting me bana lo 
 
 // Add services to the container.
 

@@ -1,7 +1,10 @@
-using Mera_yani_shweta_ka_app.Data;
+﻿using Mera_yani_shweta_ka_app.Data;
 using Mera_yani_shweta_ka_app.Interface;
 using Mera_yani_shweta_ka_app.ServiceImpl;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,25 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Add services to the container.
 builder.Services.AddScoped<ICustomerRepository, CustomerServiceImpl>();
+builder.Services.AddScoped<Ijwtservice, JwtService>();
+builder.Services.AddScoped<IAuthRepository, AuthService>();
+
+
+//add aauthentication service
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
 
 
 builder.Services.AddControllers();
@@ -28,7 +50,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication(); // 🟢 Add this line before UseAuthorization
 app.UseAuthorization();
+
 
 app.MapControllers();
 
